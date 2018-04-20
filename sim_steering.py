@@ -7,15 +7,8 @@ adjustable parameters
 # from scipy import signal
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.animation as animation
 import matplotlib
-import csv
-import copy2clipboard  # conda install pillow
-import datetime
 import time
-import os
-import sys
-import pandas as pd
 import transforms3d
 
 
