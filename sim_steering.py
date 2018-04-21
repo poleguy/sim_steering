@@ -15,13 +15,16 @@ import transforms3d
 def run():
     #global scene
     scene = Scene()
-    scene.fig = plt.figure()
-    scene.ax1 = scene.fig.add_subplot(1, 1, 1, aspect='equal')
+    #scene.fig = plt.figure()
+    #scene.ax1 = scene.fig.add_subplot(1, 1, 1, aspect='equal')
 
     x = [1,2,3,4]
-    x_trace = 'left'
-    track_width = 24 # inches
-    scene.wheel_base = 35 # inches
+
+    # go out and measure these things or
+    # if not built yet, or you want to try a change, put in a number you want to try
+
+    scene.track_width = 24 # inches
+    scene.wheel_base = 24 # inches # ICT: 35
     max_steering_angle = 45 # degrees
     axle_length = 3.5 # inches
     control_arm_length = 3 # inches behind axle of control arm connection point
@@ -57,35 +60,41 @@ def run():
 
     #scene.box.plot(plt)
 
-    scene.add({'right_wheel': Box(pos=np.array([track_width/2-wheel_size[0]/2,0,0]),
+    scene.add({'right_wheel': Box(pos=np.array([scene.track_width/2-wheel_size[0]/2,0,0]),
               size=wheel_size, color='black')})
-    scene.add({'left_wheel': Box(pos=np.array([-track_width/2+wheel_size[0]/2,0,0]),
+    scene.add({'left_wheel': Box(pos=np.array([-scene.track_width/2+wheel_size[0]/2,0,0]),
               size=wheel_size, color='black')})
+
+    scene.add({'rear_right_wheel': Box(pos=np.array([scene.track_width/2-wheel_size[0]/2,-scene.wheel_base,0]),
+              size=wheel_size, color='black')})
+    scene.add({'rear_left_wheel': Box(pos=np.array([-scene.track_width/2+wheel_size[0]/2,-scene.wheel_base,0]),
+              size=wheel_size, color='black')})
+
 
     #scene.right_wheel.plot(plt)
 
     scene.add({'right_axle': Box(pos=scene.objects['right_wheel'].pos-np.array([axle_length/2,0,0]),
               size=[axle_length,1,1])})
     scene.add({'right_axle_pivot': Box(pos=scene.objects['right_axle'].pos-np.array([axle_length/2,0,0]),
-              size=[.1,.1,.1], color='black')})
+              size=[.1,.1,.1], color='red')})
 
     scene.add({'left_axle': Box(pos=scene.objects['left_wheel'].pos-np.array([-axle_length/2,0,0]),
               size=[axle_length,1,1])})
-    scene.add({'left_axle_pivot': Box(pos=scene.objects['left_axle'].pos-np.array([-axle_length/2,0,0]),
-              size=[.1,.1,.1], color='black')})
+    scene.add({'left_axle_pivot': Box(pos=scene.objects['left_axle'].pos+np.array([axle_length/2,0,0]),
+              size=[.1,.1,.1], color='red')})
 
     #scene.right_axle.plot(plt)
 
     scene.add({'right_axle_arm': Box(pos=scene.objects['right_axle'].pos-np.array([control_arm_offset+axle_length/2,control_arm_length/2,0]),
               size=[1,control_arm_length,1])})
 
-    scene.add({'right_axle_arm_pivot': Box(pos=scene.objects['right_axle_arm'].pos-np.array([0,control_arm_length/2,0]),
+    scene.add({'right_axle_arm_pivot': Box(pos=scene.objects['right_axle_arm'].pos+np.array([0,-control_arm_length/2,0]),
               size=[.1,.1,.1])})
 
-    scene.add({'left_axle_arm': Box(pos=scene.objects['left_axle'].pos+np.array([control_arm_offset+axle_length/2,control_arm_length/2,0]),
+    scene.add({'left_axle_arm': Box(pos=scene.objects['left_axle'].pos+np.array([control_arm_offset+axle_length/2,-control_arm_length/2,0]),
               size=[1,control_arm_length,1])})
 
-    scene.add({'left_axle_arm_pivot': Box(pos=scene.objects['left_axle_arm'].pos+np.array([0,control_arm_length/2,0]),
+    scene.add({'left_axle_arm_pivot': Box(pos=scene.objects['left_axle_arm'].pos+np.array([0,-control_arm_length/2,0]),
               size=[.1,.1,.1])})
 
     #scene.right_axle_arm.plot(plt)
@@ -115,10 +124,17 @@ def run():
 
     scene.add(
         {'wheel_circle_right': Sphere(pos=scene.objects['right_axle'].pos-
-                                          np.multiply(scene.objects['right_axle'].size,np.array([0.5,0,0])),
+                                          np.array([axle_length/2,0,0]),
                                          size=[wheel_circle,wheel_circle,wheel_circle])})
     scene.add({'wheel_circle_right_pivot': Box(pos=scene.objects['wheel_circle_right'].pos,
               size=[.1,.1,.1])})
+
+    scene.add(
+        {'wheel_circle_left': Sphere(pos=scene.objects['left_axle'].pos+
+                                          np.array([axle_length/2,0,0]),
+                                         size=[wheel_circle,wheel_circle,wheel_circle],color='purple')})
+    scene.add({'wheel_circle_left_pivot': Box(pos=scene.objects['wheel_circle_left'].pos,
+              size=[.1,.1,.1],color='green')})
 
 
     #scene.steering_arm.plot(plt)
@@ -139,8 +155,8 @@ def run():
         R = RU(np.array([1, 0, 0]), axis)
         scene.objects['tie_rod_right'].rotate_translate(R)
 
-    scene.add({'tie_rod_left': Box(pos=scene.objects['steering_arm_left_pivot'].pos-np.array([tie_rod_length/2,0,0]),
-                      size=np.array([tie_rod_length,.375,.375]))})
+    #scene.add({'tie_rod_left': Box(pos=scene.objects['steering_arm_left_pivot'].pos-np.array([tie_rod_length/2,0,0]),
+    #                  size=np.array([tie_rod_length,.375,.375]))})
 
     #scene.add({'line': Line(pos=np.array([0, 0, 0]), end_pos=np.array([1, 2, 0]))})
 
@@ -164,20 +180,18 @@ def run():
 
 
     plt.ion()
-    plt.show()
+    #plt.show()
     for i in range(1):
-        for a in [0,10,20,-20,-10]:
+        for a in [20,0,-20]:
         #for a in [0]:
             print(a)
             plt.figure()
             plt.gcf().clear()
-            origin = scene.objects['steering_arm_pivot'].pos
-            scene.objects['steering_arm'].rotate(angle=rad(a), axis=np.array([0,0,1]), origin=origin)
-            scene.objects['steering_arm_right_pivot'].rotate(angle=rad(a), axis=np.array([0,0,1]), origin=origin)
-            scene.objects['steering_circle_right'].rotate(angle=rad(a), axis=np.array([0,0,1]), origin=origin)
 
             steering_angle = update_scene(scene,a)
-            print("gain %0.2f"%(steering_angle/a))
+            if a != 0:
+                print("gain %0.2f"%(steering_angle/a))
+
             #scene.steering_arm.plot(plt)
             plt.draw()
             #time.sleep(1.0)
@@ -185,9 +199,9 @@ def run():
             #input('test')
 
             # put it back to starting location
-            scene.objects['steering_arm'].rotate(angle=rad(-a), axis=np.array([0, 0, 1]), origin=origin)
-            scene.objects['steering_arm_right_pivot'].rotate(angle=rad(-a), axis=np.array([0, 0, 1]), origin=origin)
-            scene.objects['steering_circle_right'].rotate(angle=rad(-a), axis=np.array([0, 0, 1]), origin=origin)
+            # scene.objects['steering_arm'].rotate(angle=rad(-a), axis=np.array([0, 0, 1]), origin=origin)
+            # scene.objects['steering_arm_right_pivot'].rotate(angle=rad(-a), axis=np.array([0, 0, 1]), origin=origin)
+            # scene.objects['steering_circle_right'].rotate(angle=rad(-a), axis=np.array([0, 0, 1]), origin=origin)
 
             # time.sleep(0.1)
 
@@ -358,7 +372,7 @@ class Scene():
     def add(self, dict):
         self.objects.update(dict)
 
-def update_scene(scene,steering_angle):
+def update_scene(scene,steering_angle, calc=True):
     # update all related objects
     # scene.box.plot(plt)
     # scene.right_wheel.plot(plt)
@@ -385,65 +399,139 @@ def update_scene(scene,steering_angle):
     #plt.axes().set_aspect('equal', 'datalim')
     #plt.xlim((-20, 20))
     plt.axis('equal')
-    plt.axis([-15, 15,-15,15])
+    plt.axis([-15, 15,-50,10])
 
-    r1 = scene.objects['steering_circle_right'].size[0]
-    r2 = scene.objects['wheel_circle_right'].size[0]
-    pos1 = scene.objects['steering_arm_right_pivot'].pos
-    #pos2 =np.array([10,0,0])
-    pos2 = scene.objects['wheel_circle_right_pivot'].pos
-    pos = solve_positions(r1, pos1, r2, pos2)
-    x = pos[0]
-    a = pos[1]
-    # create rotation matrix
-    R = np.array([[pos[0],pos[1],0],
-                  [pos1[1], pos1[0], 0],
-                  [0, 0, 1]])
-    #v = np.array([pos[0],pos[1],0]) + pos1
-    v = np.dot(pos, R[:3, :3].T)
-    #plt.plot([pos1[0],v[0]],[pos1[1],v[1]])
 
-    # draw a line from center to center
-    scene.add({'line_center_to_center': Line(pos=pos1, end_pos=pos2)})
-    # https://math.stackexchange.com/questions/83404/finding-a-point-along-a-line-in-three-dimensions-given-two-points
-    # draw a line in that direction but only as long as x
-    # create vector
-    v = pos2 - pos1
-    # normalize
-    v = v/np.linalg.norm(v)
-    # point of distance x
-    v_x = pos1+x*v
-    scene.add({'line_center_to_intersection': Line(pos=pos1, end_pos=v_x, color='cyan')})
-    # create vector for a perpendicular to d
+    angle = steering_angle
+    if calc:
+        # left side
+        origin = scene.objects['steering_arm_pivot'].pos
+        scene.objects['steering_arm'].rotate(angle=rad(-steering_angle), axis=np.array([0, 0, 1]), origin=origin)
+        scene.objects['steering_arm_left_pivot'].rotate(angle=rad(-steering_angle), axis=np.array([0, 0, 1]), origin=origin)
+        scene.objects['steering_circle_left'].rotate(angle=rad(-steering_angle), axis=np.array([0, 0, 1]), origin=origin)
 
-    v_a = np.cross(v,np.array([0,0,1]))
-    # normalize
-    v_a = v_a/np.linalg.norm(v)
-    # scale
-    v_a_end = v_x + a*v_a
-    scene.add({'line_to_intersection_point': Line(pos=v_x, end_pos=v_a_end)})
+        r1 = scene.objects['steering_circle_left'].size[0]
+        r2 = scene.objects['wheel_circle_left'].size[0]
+        pos1 = scene.objects['steering_arm_left_pivot'].pos
+        # pos2 =np.array([10,0,0])
+        pos2 = scene.objects['wheel_circle_left_pivot'].pos
+        pos = solve_positions(r1, pos1, r2, pos2)
+        x = pos[0]
+        a = pos[1]
+        # create rotation matrix
+        R = np.array([[pos[0], pos[1], 0],
+                      [pos1[1], pos1[0], 0],
+                      [0, 0, 1]])
+        # v = np.array([pos[0],pos[1],0]) + pos1
+        v = np.dot(pos, R[:3, :3].T)
+        # plt.plot([pos1[0],v[0]],[pos1[1],v[1]])
 
-    #print(pos)
+        # draw a line from center to center
+        #scene.add({'line_center_to_center_left': Line(pos=pos1, end_pos=pos2)})
+        # https://math.stackexchange.com/questions/83404/finding-a-point-along-a-line-in-three-dimensions-given-two-points
+        # draw a line in that direction but only as long as x
+        # create vector
+        v = pos2 - pos1
+        # normalize
+        v = v / np.linalg.norm(v)
+        # point of distance x
+        v_x = pos1 + x * v
+        #scene.add({'line_center_to_intersection_left': Line(pos=pos1, end_pos=v_x, color='cyan')})
+        # create vector for a perpendicular to d
 
-    # update position of wheels
+        v_a = np.cross(v, np.array([0, 0, -1]))
+        # normalize
+        v_a = v_a / np.linalg.norm(v)
+        # scale
+        v_a_end = v_x + a * v_a
+        #scene.add({'line_to_intersection_point_left': Line(pos=v_x, end_pos=v_a_end)})
 
-    # calculate angle between current position and intersection point
-    # around wheel origin
+        # draw a line for tie rod
+        scene.add({'tie_rod_left': Line(pos=pos1, end_pos=v_a_end)})
 
-    wheel_origin = scene.objects['wheel_circle_right_pivot'].pos
+        # update position of wheels
 
-    current_pos = scene.objects['right_axle_arm_pivot'].pos
-    intersect_point = v_a_end
+        # calculate angle between current position and intersection point
+        # around wheel origin
 
-    angle = angle_between(intersect_point - wheel_origin,current_pos - wheel_origin )
+        wheel_origin_left = wheel_origin = scene.objects['wheel_circle_left_pivot'].pos
 
-    #scene.add({'debug': Line(pos=current_pos, end_pos=intersect_point)})
+        current_pos = scene.objects['left_axle_arm_pivot'].pos
+        intersect_point_left = intersect_point = v_a_end
 
-    print(deg(angle))
-    scene.objects['right_axle'].rotate(angle=angle, axis=np.array([0, 0, 1]), origin=wheel_origin)
-    scene.objects['right_axle_arm'].rotate(angle=angle, axis=np.array([0, 0, 1]), origin=wheel_origin)
-    scene.objects['right_axle_arm_pivot'].rotate(angle=angle, axis=np.array([0, 0, 1]), origin=wheel_origin)
-    scene.objects['right_wheel'].rotate(angle=angle, axis=np.array([0, 0, 1]), origin=wheel_origin)
+        angle = angle_between(intersect_point - wheel_origin,current_pos - wheel_origin )
+
+
+        print("left wheel angle: %0.2f" %deg(angle))
+        scene.objects['left_axle'].rotate(angle=angle, axis=np.array([0, 0, 1]), origin=wheel_origin)
+        scene.objects['left_axle_arm'].rotate(angle=angle, axis=np.array([0, 0, 1]), origin=wheel_origin)
+        scene.objects['left_axle_arm_pivot'].rotate(angle=angle, axis=np.array([0, 0, 1]), origin=wheel_origin)
+        scene.objects['left_wheel'].rotate(angle=angle, axis=np.array([0, 0, 1]), origin=wheel_origin)
+
+        #scene.add({'debug': Line(pos=current_pos, end_pos=current_pos, color='red')})
+        # right side
+        scene.objects['steering_arm_right_pivot'].rotate(angle=rad(-steering_angle), axis=np.array([0, 0, 1]), origin=origin)
+        scene.objects['steering_circle_right'].rotate(angle=rad(-steering_angle), axis=np.array([0, 0, 1]), origin=origin)
+
+        r1 = scene.objects['steering_circle_right'].size[0]
+        r2 = scene.objects['wheel_circle_right'].size[0]
+        pos1 = scene.objects['steering_arm_right_pivot'].pos
+        # pos2 =np.array([10,0,0])
+        pos2 = scene.objects['wheel_circle_right_pivot'].pos
+        pos = solve_positions(r1, pos1, r2, pos2)
+        x = pos[0]
+        a = pos[1]
+        # create rotation matrix
+        R = np.array([[pos[0], pos[1], 0],
+                      [pos1[1], pos1[0], 0],
+                      [0, 0, 1]])
+        # v = np.array([pos[0],pos[1],0]) + pos1
+        v = np.dot(pos, R[:3, :3].T)
+        # plt.plot([pos1[0],v[0]],[pos1[1],v[1]])
+
+        # draw a line from center to center
+        #scene.add({'line_center_to_center': Line(pos=pos1, end_pos=pos2)})
+        # https://math.stackexchange.com/questions/83404/finding-a-point-along-a-line-in-three-dimensions-given-two-points
+        # draw a line in that direction but only as long as x
+        # create vector
+        v = pos2 - pos1
+        # normalize
+        v = v / np.linalg.norm(v)
+        # point of distance x
+        v_x = pos1 + x * v
+        #scene.add({'line_center_to_intersection': Line(pos=pos1, end_pos=v_x, color='cyan')})
+        # create vector for a perpendicular to d
+
+        v_a = np.cross(v, np.array([0, 0, 1]))
+        # normalize
+        v_a = v_a / np.linalg.norm(v)
+        # scale
+        v_a_end = v_x + a * v_a
+        #scene.add({'line_to_intersection_point': Line(pos=v_x, end_pos=v_a_end)})
+
+        # draw a line for tie rod
+        scene.add({'tie_rod_right': Line(pos=pos1, end_pos=v_a_end)})
+
+        # update position of wheels
+
+        # calculate angle between current position and intersection point
+        # around wheel origin
+
+
+        wheel_origin = scene.objects['wheel_circle_right_pivot'].pos
+
+        current_pos = scene.objects['right_axle_arm_pivot'].pos
+        intersect_point = v_a_end
+
+        angle = angle_between(intersect_point - wheel_origin,current_pos - wheel_origin )
+
+        #scene.add({'debug': Line(pos=current_pos, end_pos=intersect_point)})
+
+        print(deg(angle))
+        scene.objects['right_axle'].rotate(angle=angle, axis=np.array([0, 0, 1]), origin=wheel_origin)
+        scene.objects['right_axle_arm'].rotate(angle=angle, axis=np.array([0, 0, 1]), origin=wheel_origin)
+        scene.objects['right_axle_arm_pivot'].rotate(angle=angle, axis=np.array([0, 0, 1]), origin=wheel_origin)
+        scene.objects['right_wheel'].rotate(angle=angle, axis=np.array([0, 0, 1]), origin=wheel_origin)
 
     # actually update plot
     for key, value in scene.objects.items():
@@ -456,19 +544,56 @@ def update_scene(scene,steering_angle):
     plt.legend(loc='center left', bbox_to_anchor=(1,0.5),prop={'size':8})
 
     # calculate wheel angle
-
-    wheel_angle = -angle_between(np.array([0,-1,0]),intersect_point-wheel_origin)
+    wheel_angle_left = 10
+    wheel_angle_right = 10
+    if calc:
+        wheel_angle_left = angle_between(np.array([0, -1, 0]), intersect_point_left - wheel_origin_left)
+        wheel_angle_right = angle_between(np.array([0, -1, 0]), intersect_point - wheel_origin)
 
 
     # calculate turning radius
     # for outside front wheel
     # http://www.davdata.nl/math/turning_radius.html
-    alpha = wheel_angle
+    alpha = abs(wheel_angle_right)
     R = scene.wheel_base/(np.sin(alpha))
     R_feet = np.floor(R/12)
     R_inches = (R/12-R_feet)*12
 
-    plt.title('steering angle %0.2f,angle %0.2f, turning radius: %d\' %0.2f"'%(steering_angle,deg(wheel_angle),R_feet,R_inches))
+    # https://www.quora.com/How-can-a-cars-turning-radius-be-reduced-1
+    # calculate turning radius
+    # for inside front wheel
+    R_left = scene.wheel_base/np.sin(abs(wheel_angle_left))
+    R_l_feet = np.floor(R_left/12)
+    R_l_inches = (R_left/12-R_l_feet)*12
+
+    # calculate ideal outside angle
+    alpha_in = np.minimum(abs(wheel_angle_right),abs(wheel_angle_left))
+    alpha_out = np.arctan(scene.wheel_base/((scene.wheel_base/np.tan(alpha_in)+scene.track_width)))
+
+    R_out_ackerman = scene.wheel_base/np.sin(alpha_out)
+    R_out_ackerman_feet = np.floor(R_out_ackerman/12)
+    R_out_ackerman_inches = (R_out_ackerman/12-R_out_ackerman_feet)*12
+
+
+    plt.title('steering angle %0.2f,angle left %0.2f, angle right %0.2f,\n'
+              'left turning radius: %d\' %0.2f", right turning radius: %d\' %0.2f", %0.2f'
+              '\nideal ackerman outer turning radius: %d\' %0.2f"'%
+              (steering_angle,deg(wheel_angle_left),deg(wheel_angle_right),
+               R_l_feet, R_l_inches,
+               R_feet,R_inches,
+               deg(alpha_out),
+               R_out_ackerman_feet,
+               R_out_ackerman_inches
+               ))
+
+    # undo
+    scene.objects['steering_arm_left_pivot'].rotate(angle=rad(steering_angle), axis=np.array([0, 0, 1]), origin=origin)
+    scene.objects['steering_circle_left'].rotate(angle=rad(steering_angle), axis=np.array([0, 0, 1]), origin=origin)
+
+    origin = scene.objects['steering_arm_pivot'].pos
+    scene.objects['steering_arm'].rotate(angle=rad(steering_angle), axis=np.array([0, 0, 1]), origin=origin)
+    scene.objects['steering_arm_right_pivot'].rotate(angle=rad(steering_angle), axis=np.array([0, 0, 1]), origin=origin)
+    scene.objects['steering_circle_right'].rotate(angle=rad(steering_angle), axis=np.array([0, 0, 1]), origin=origin)
 
     return deg(angle)
 
